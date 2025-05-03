@@ -1,0 +1,557 @@
+{
+    "laptops": {
+      "gamaBaja": {
+        "rangoPrecio": "250$ - 400$",
+        "modelos": [
+          {
+            "nombre": "Acer Aspire 5",
+            "procesador": "AMD Ryzen 3 5300U",
+            "ram": "4 GB",
+            "almacenamiento": "128 GB SSD",
+            "pantalla": "15.6\" Full HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 400
+          },
+          {
+            "nombre": "Lenovo IdeaPad 3",
+            "procesador": "Intel Core i3-1115G4",
+            "ram": "4 GB",
+            "almacenamiento": "256 GB SSD",
+            "pantalla": "14\" HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 350
+          },
+          {
+            "nombre": "Dell Inspiron 15 3000",
+            "procesador": "Intel Pentium Silver N5030",
+            "ram": "4 GB",
+            "almacenamiento": "128 GB SSD",
+            "pantalla": "15.6\" HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 350
+          },
+          {
+            "nombre": "Acer Aspire 1",
+            "procesador": "Intel Celeron N4500",
+            "ram": "4 GB",
+            "almacenamiento": "128 GB eMMC",
+            "pantalla": "14\" HD (1366 x 768)",
+            "sistemaOperativo": "Windows 10 Home en modo S",
+            "precio": 300
+          },
+          {
+            "nombre": "HP Stream 14",
+            "procesador": "Intel Celeron N4020",
+            "ram": "4 GB",
+            "almacenamiento": "64 GB eMMC",
+            "pantalla": "14\" HD (1366 x 768)",
+            "sistemaOperativo": "Windows 11 Home en modo S",
+            "precio": 280
+          },
+          {
+            "nombre": "ASUS VivoBook Go 15",
+            "procesador": "AMD Ryzen 3 3250U",
+            "ram": "4 GB",
+            "almacenamiento": "128 GB SSD",
+            "pantalla": "15.6\" HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 375
+          },
+          {
+            "nombre": "HP Laptop 15",
+            "procesador": "Intel Celeron N4500",
+            "ram": "4 GB",
+            "almacenamiento": "128 GB SSD",
+            "pantalla": "15.6\" HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 320
+          },
+          {
+            "nombre": "Lenovo IdeaPad 1",
+            "procesador": "AMD A6-9220e",
+            "ram": "4 GB",
+            "almacenamiento": "64 GB eMMC",
+            "pantalla": "14\" HD",
+            "sistemaOperativo": "Windows 11 Home en modo S",
+            "precio": 250
+          }
+        ]
+      },
+      "gamaMedia": {
+        "rangoPrecio": "600$ - 800$",
+        "modelos": [
+          {
+            "nombre": "HP Pavilion x360",
+            "procesador": "Intel Core i5-1135G7",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "14\" Full HD táctil",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 650
+          },
+          {
+            "nombre": "Acer Aspire 7",
+            "procesador": "AMD Ryzen 5 3550H",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "15.6\" Full HD",
+            "sistemaOperativo": "Windows 10 Home",
+            "precio": 700
+          },
+          {
+            "nombre": "Lenovo Yoga 7i",
+            "procesador": "Intel Core i5-1235U",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "pantalla": "14\" Full HD táctil",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 750
+          },
+          {
+            "nombre": "Dell Inspiron 14 7000",
+            "procesador": "Intel Core i5-11300H",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "14\" Full HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 750
+          },
+          {
+            "nombre": "Asus VivoBook 15",
+            "procesador": "Intel Core i5-1135G7",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "15.6\" Full HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 700
+          },
+          {
+            "nombre": "MSI Modern 14",
+            "procesador": "Intel Core i5-1155G7",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "14\" Full HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 680
+          },
+          {
+            "nombre": "ASUS ZenBook 14",
+            "procesador": "AMD Ryzen 5 5500U",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "pantalla": "14\" Full HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 720
+          },
+          {
+            "nombre": "Acer Swift 3",
+            "procesador": "Intel Core i5-1240P",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "14\" Full HD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 780
+          }
+        ]
+      },
+      "gamaAlta": {
+        "rangoPrecio": "1200$ - 2000$",
+        "modelos": [
+          {
+            "nombre": "Apple MacBook Air (M2, 2023)",
+            "procesador": "Apple M2",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "pantalla": "13.6\" Liquid Retina",
+            "sistemaOperativo": "macOS",
+            "precio": 1200
+          },
+          {
+            "nombre": "Dell XPS 15",
+            "procesador": "Intel Core i7-13700H",
+            "ram": "16 GB",
+            "almacenamiento": "1 TB SSD",
+            "pantalla": "15.6\" 4K UHD+",
+            "sistemaOperativo": "Windows 11 Pro",
+            "precio": 2000
+          },
+          {
+            "nombre": "Microsoft Surface Laptop 5",
+            "procesador": "Intel Core i7-1255U",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "15\" PixelSense",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 1800
+          },
+          {
+            "nombre": "HP Spectre x360 14",
+            "procesador": "Intel Core i7-1165G7",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "13.5\" Full HD táctil",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 1400
+          },
+          {
+            "nombre": "Huawei MateBook X Pro",
+            "procesador": "Intel Core i7-1165G7",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "13.9\" 3K táctil",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 1500
+          },
+          {
+            "nombre": "Razer Book 13",
+            "procesador": "Intel Core i7-1165G7",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "pantalla": "13.4\" 4K táctil",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 1600
+          },
+          {
+            "nombre": "ASUS ZenBook Pro Duo",
+            "procesador": "Intel Core i7-12700H",
+            "ram": "16 GB",
+            "almacenamiento": "1 TB SSD",
+            "pantalla": "15.6\" 4K OLED",
+            "sistemaOperativo": "Windows 11 Pro",
+            "precio": 1900
+          },
+          {
+            "nombre": "LG Gram 17",
+            "procesador": "Intel Core i7-1260P",
+            "ram": "16 GB",
+            "almacenamiento": "1 TB SSD",
+            "pantalla": "17\" WQXGA",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 1700
+          }
+        ]
+      },
+      "gamer": {
+        "rangoPrecio": "750$ - 1500$",
+        "modelos": [
+          {
+            "nombre": "Acer Nitro 5",
+            "procesador": "Intel Core i5-11400H",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "RTX 3050",
+            "tasaRefresco": "144Hz",
+            "precio": 1000
+          },
+          {
+            "nombre": "HP Omen 16",
+            "procesador": "AMD Ryzen 7 5800H",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "RTX 3060",
+            "tasaRefresco": "165Hz",
+            "precio": 1500
+          },
+          {
+            "nombre": "Lenovo Legion 5",
+            "procesador": "AMD Ryzen 5 5600H",
+            "ram": "12 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "GTX 1650",
+            "tasaRefresco": "120Hz",
+            "precio": 850
+          },
+          {
+            "nombre": "HP Pavilion Gaming 15",
+            "procesador": "Intel Core i5-11300H",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "GTX 1650",
+            "tasaRefresco": "60Hz",
+            "precio": 750
+          },
+          {
+            "nombre": "MSI GF65 Thin",
+            "procesador": "Intel Core i7-10750H",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "RTX 3060",
+            "tasaRefresco": "120Hz",
+            "precio": 1200
+          },
+          {
+            "nombre": "ASUS TUF Gaming A15",
+            "procesador": "AMD Ryzen 7 4800H",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "RTX 3050 Ti",
+            "tasaRefresco": "144Hz",
+            "precio": 1100
+          },
+          {
+            "nombre": "Dell G15 Gaming",
+            "procesador": "AMD Ryzen 5 5600H",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "RTX 3050",
+            "tasaRefresco": "120Hz",
+            "precio": 900
+          },
+          {
+            "nombre": "MSI Katana GF76",
+            "procesador": "Intel Core i7-11800H",
+            "ram": "16 GB",
+            "almacenamiento": "512 GB SSD",
+            "tarjetaGrafica": "RTX 3050 Ti",
+            "tasaRefresco": "144Hz",
+            "precio": 1300
+          }
+        ]
+      },
+      "empresarial": {
+        "rangoPrecio": "700$ - 1000$",
+        "modelos": [
+          {
+            "nombre": "Lenovo ThinkPad T14",
+            "procesador": "Intel Core i5-10210U",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "sistemaOperativo": "Windows 10 Pro",
+            "precio": 750
+          },
+          {
+            "nombre": "Lenovo ThinkPad X1 Carbon",
+            "procesador": "Intel Core i5-10210U",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "sistemaOperativo": "Windows 10 Pro",
+            "precio": 950
+          },
+          {
+            "nombre": "HP EliteBook 850 G6",
+            "procesador": "Intel Core i5-8365U",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "sistemaOperativo": "Windows 10 Pro",
+            "precio": 900
+          },
+          {
+            "nombre": "Acer Swift 3",
+            "procesador": "Intel Core i5-1135G7",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "sistemaOperativo": "Windows 11 Home",
+            "precio": 700
+          },
+          {
+            "nombre": "Lenovo ThinkPad L14 Yoga",
+            "procesador": "Intel Core i5-1135G7",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "sistemaOperativo": "Windows 11 Pro",
+            "precio": 1000
+          },
+          {
+            "nombre": "Dell Latitude 5420",
+            "procesador": "Intel Core i5-1145G7",
+            "ram": "8 GB",
+            "almacenamiento": "256 GB SSD",
+            "sistemaOperativo": "Windows 10 Pro",
+            "precio": 850
+          },
+          {
+            "nombre": "HP ProBook 450 G8",
+            "procesador": "Intel Core i5-1135G7",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "sistemaOperativo": "Windows 10 Pro",
+            "precio": 800
+          },
+          {
+            "nombre": "ASUS ExpertBook B5",
+            "procesador": "Intel Core i5-1135G7",
+            "ram": "8 GB",
+            "almacenamiento": "512 GB SSD",
+            "sistemaOperativo": "Windows 11 Pro",
+            "precio": 880
+          }
+        ]
+      }
+    },
+    "componentes": {
+      "memoriaRam": [
+        {
+          "nombre": "Crucial 8GB DDR4-3200 SODIMM",
+          "descripcion": "Compatible con laptops modernas, bajo voltaje",
+          "precio": 35
+        },
+        {
+          "nombre": "Kingston HyperX Impact 16GB DDR4-3200",
+          "descripcion": "Alto rendimiento para gaming",
+          "precio": 65
+        },
+        {
+          "nombre": "Samsung 8GB DDR4-2666 SODIMM",
+          "descripcion": "Fiabilidad y rendimiento equilibrado",
+          "precio": 40
+        }
+      ],
+      "almacenamiento": [
+        {
+          "nombre": "Samsung 970 EVO Plus 500GB NVMe M.2",
+          "descripcion": "Alto rendimiento, 3500MB/s lectura",
+          "precio": 80
+        },
+        {
+          "nombre": "Crucial MX500 1TB SATA SSD",
+          "descripcion": "Excelente relación calidad-precio",
+          "precio": 100
+        },
+        {
+          "nombre": "Western Digital Blue 2TB HDD 2.5\"",
+          "descripcion": "Almacenamiento masivo económico",
+          "precio": 65
+        }
+      ],
+      "baterias": [
+        {
+          "nombre": "Batería HP Original 45Wh",
+          "descripcion": "Compatible con serie Pavilion",
+          "precio": 89
+        },
+        {
+          "nombre": "Batería Lenovo ThinkPad 50Wh",
+          "descripcion": "Para modelos T14/T15",
+          "precio": 95
+        },
+        {
+          "nombre": "Batería Dell 60Wh",
+          "descripcion": "Compatible con Latitude/Inspiron",
+          "precio": 99
+        }
+      ]
+    },
+    "accesorios": {
+      "mochilasFundas": [
+        {
+          "nombre": "Targus CitySmart 15.6\" Professional Backpack",
+          "descripcion": "Resistente al agua",
+          "precio": 45
+        },
+        {
+          "nombre": "Samsonite Classic Sleeve 14\"",
+          "descripcion": "Funda acolchada premium",
+          "precio": 25
+        },
+        {
+          "nombre": "SwissGear Travel Gear 17\" Laptop Backpack",
+          "descripcion": "Múltiples compartimentos",
+          "precio": 55
+        }
+      ],
+      "perifericos": [
+        {
+          "nombre": "Logitech MX Master 3",
+          "descripcion": "Mouse inalámbrico premium",
+          "precio": 99
+        },
+        {
+          "nombre": "Microsoft Surface Keyboard",
+          "descripcion": "Teclado bluetooth slim",
+          "precio": 79
+        },
+        {
+          "nombre": "LG 24\" FHD Monitor",
+          "descripcion": "Panel IPS, 75Hz",
+          "precio": 159
+        }
+      ],
+      "coolingPads": [
+        {
+          "nombre": "Cooler Master NotePal X3",
+          "descripcion": "Ventilador LED azul, 2 puertos USB",
+          "precio": 35
+        },
+        {
+          "nombre": "Thermaltake Massive 20 RGB",
+          "descripcion": "200mm fan, control táctil",
+          "precio": 45
+        },
+        {
+          "nombre": "KLIM Wind Laptop Cooling Pad",
+          "descripcion": "4 ventiladores, diseño ligero",
+          "precio": 25
+        }
+      ],
+      "accesoriosCarga": [
+        {
+          "nombre": "Anker 65W GaN Charger",
+          "descripcion": "Cargador compacto USB-C",
+          "precio": 45
+        },
+        {
+          "nombre": "AUKEY 100W Power Bank 20000mAh",
+          "descripcion": "Batería portátil de alta capacidad",
+          "precio": 79
+        },
+        {
+          "nombre": "Belkin Surge Protector",
+          "descripcion": "12 tomas, protección contra sobretensiones",
+          "precio": 25
+        }
+      ]
+    },
+    "servicios": {
+      "garantiasExtendidas": [
+        {
+          "nombre": "Plan Básico",
+          "descripcion": "1 año adicional de cobertura",
+          "precio": 49
+        },
+        {
+          "nombre": "Plan Premium",
+          "descripcion": "2 años adicionales + cobertura por accidentes",
+          "precio": 99
+        },
+        {
+          "nombre": "Plan Business",
+          "descripcion": "3 años + soporte prioritario",
+          "precio": 149
+        }
+      ],
+      "mantenimiento": [
+        {
+          "nombre": "Limpieza Básica",
+          "descripcion": "Limpieza externa + teclado",
+          "precio": 25
+        },
+        {
+          "nombre": "Mantenimiento Preventivo",
+          "descripcion": "Limpieza completa + pasta térmica",
+          "precio": 45
+        },
+        {
+          "nombre": "Servicio Premium",
+          "descripcion": "Limpieza profunda + optimización software",
+          "precio": 75
+        }
+      ],
+      "soporteTecnico": [
+        {
+          "nombre": "Soporte Remoto",
+          "descripcion": "Asistencia técnica por TeamViewer",
+          "precio": "15$/sesión"
+        },
+        {
+          "nombre": "Diagnóstico Presencial",
+          "descripcion": "Revisión y diagnóstico completo",
+          "precio": 35
+        },
+        {
+          "nombre": "Configuración Empresarial",
+          "descripcion": "Setup completo para empresas",
+          "precio": "99$/equipo"
+        }
+      ]
+    }
+  }

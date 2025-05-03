@@ -148,39 +148,9 @@ try {
     process.exit(1);
 }
 
-// Función mejorada para cargar archivos con caché
-const fileCache = new Map();
-function loadFile(filePath, defaultValue = '') {
-    try {
-        if (fileCache.has(filePath)) {
-            return fileCache.get(filePath);
-        }
-
-        const fullPath = path.join(__dirname, filePath);
-        if (!fs.existsSync(fullPath)) {
-            console.warn(`Archivo no encontrado: ${filePath}`);
-            return defaultValue;
-        }
-
-        const content = fs.readFileSync(fullPath, 'utf8');
-        fileCache.set(filePath, content);
-        return content;
-    } catch (error) {
-        console.error(`Error leyendo el archivo ${filePath}:`, error);
-        return defaultValue;
-    }
-}
-
-// Cargar información desde archivos con manejo de errores
-let laptops, companyInfo, promptInstructions;
-try {
-    laptops = loadFile('Laptops1.txt');
-    companyInfo = loadFile('info_empresa.txt');
-    promptInstructions = loadFile('promt.txt');
-} catch (error) {
-    console.error('Error cargando archivos de configuración:', error);
-    process.exit(1);
-}
+// Cargar información desde archivos JSON
+const laptopsData = require('./data/laptops.json');
+const companyData = require('./data/empresa.json');
 
 // Sistema de rate limiting mejorado
 function checkRateLimit(userId) {
@@ -246,21 +216,21 @@ async function selectRelevantDatasetWithAI(userMessage) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     // Descripciones breves de cada dataset
     const datasets = [
-        { name: 'Laptops1.txt', description: 'Listado de laptops, componentes, accesorios y servicios disponibles en ElectronicsJS.' },
-        { name: 'info_empresa.txt', description: 'Información sobre la empresa, misión, visión, políticas, horarios y contacto.' }
+        { name: 'laptops.json', description: 'Listado de laptops, componentes, accesorios y servicios disponibles en ElectronicsJS.' },
+        { name: 'empresa.json', description: 'Información sobre la empresa, misión, visión, políticas, horarios y contacto.' }
     ];
     const datasetsList = datasets.map(ds => `- ${ds.name}: ${ds.description}`).join('\n');
     const selectionPrompt = `Tengo los siguientes datasets de información para responder preguntas de clientes.\n${datasetsList}\n\n¿Según la siguiente consulta de usuario, cuál dataset es el más relevante para responder?\nConsulta: \"${userMessage}\"\n\nResponde solo el nombre del archivo más relevante, sin explicación extra.`;
     try {
         const result = await model.generateContent(selectionPrompt);
         const text = result.response.text().toLowerCase();
-        if (text.includes('laptops1')) return 'Laptops1.txt';
-        if (text.includes('info_empresa')) return 'info_empresa.txt';
+        if (text.includes('laptops')) return 'laptops.json';
+        if (text.includes('empresa')) return 'empresa.json';
         // fallback
-        return 'info_empresa.txt';
+        return 'empresa.json';
     } catch (e) {
         console.error('Error seleccionando dataset relevante con IA:', e);
-        return 'info_empresa.txt';
+        return 'empresa.json';
     }
 }
 
@@ -273,7 +243,7 @@ async function generateResponse(userMessage, contactId, retryCount = 0) {
 
         // --- Selección dinámica del dataset relevante ---
         const relevantDatasetFile = await selectRelevantDatasetWithAI(userMessage);
-        const datasetContext = loadFile(relevantDatasetFile);
+        const datasetContext = relevantDatasetFile === 'laptops.json' ? JSON.stringify(laptopsData) : JSON.stringify(companyData);
 
         const customPrompt = `
         Eres un asistente virtual llamado Electra amigable y profesional de ElectronicsJS. Tu objetivo es proporcionar la mejor atención posible siguiendo estas pautas:
