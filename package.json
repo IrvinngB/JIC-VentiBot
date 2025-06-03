@@ -1,18 +1,23 @@
 {
   "dependencies": {
     "@google/generative-ai": "^0.17.0",
+    "@supabase/supabase-js": "^2.49.9",
     "axios": "^1.7.9",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "moment-timezone": "^0.5.46",
     "node-cron": "^3.0.3",
+    "pg": "^8.16.0",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "socket.io": "^4.7.5",
     "whatsapp-web.js": "^1.26.0"
   },
   "scripts": {
-  "start": "node bot/bot.js",
-  "dev": "nodemon bot/app.js"
-}
+    "start": "node bot/bot.js",
+    "dev": "nodemon bot/app.js"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4"
+  }
 }
