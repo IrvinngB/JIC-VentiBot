@@ -183,7 +183,6 @@ function actualizarContexto(idContacto, mensajeUsuario, respuestaBot, almacenCon
 
 module.exports = {
   actualizarUltimoMensaje,
-  cargarArchivo,
   verificarHorario,
   esSpam,
   esMensajeRepetido,

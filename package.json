@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@google/generative-ai": "^0.17.0",
-    "@supabase/supabase-js": "^2.49.9",
+    "@supabase/supabase-js": "^2.49.10",
     "axios": "^1.7.9",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -14,7 +14,7 @@
     "whatsapp-web.js": "^1.26.0"
   },
   "scripts": {
-    "start": "node bot/bot.js",
+    "start": "node bot/app.js",
     "dev": "nodemon bot/app.js"
   },
   "devDependencies": {

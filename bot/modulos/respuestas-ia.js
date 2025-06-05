@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai")
-const { cargarArchivo } = require("./utilidades")
 const { MENSAJES_SISTEMA } = require("./mensajes-sistema")
+const { query } = require("./conexion")
 
 // Verificación de variables de entorno
 if (!process.env.GEMINI_API_KEY) {
@@ -26,31 +26,16 @@ const TIEMPO_ESPERA_MENSAJE = 60000 // 60 segundos
  * @returns {string} - Nombre del archivo de dataset seleccionado
  */
 async function seleccionarDatasetRelevante(mensajeUsuario) {
-  const modelo = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-  // Descripciones breves de cada dataset
-  const datasets = [
-    {
-      name: "Laptops1.txt",
-      description: "Listado de laptops, componentes, accesorios y servicios disponibles en ElectronicsJS.",
-    },
-    {
-      name: "info_empresa.txt",
-      description: "Información sobre la empresa, misión, visión, políticas, horarios y contacto.",
-    },
-  ]
-  const listaDatasets = datasets.map((ds) => `- ${ds.name}: ${ds.description}`).join("\n")
-  const promptSeleccion = `Tengo los siguientes datasets de información para responder preguntas de clientes.\n${listaDatasets}\n\n¿Según la siguiente consulta de usuario, cuál dataset es el más relevante para responder?\nConsulta: \"${mensajeUsuario}\"\n\nResponde solo el nombre del archivo más relevante, sin explicación extra.`
-  try {
-    const resultado = await modelo.generateContent(promptSeleccion)
-    const texto = resultado.response.text().toLowerCase()
-    if (texto.includes("laptops1")) return "Laptops1.txt"
-    if (texto.includes("info_empresa")) return "info_empresa.txt"
-    // fallback
-    return "info_empresa.txt"
-  } catch (e) {
-    console.error("Error seleccionando dataset relevante con IA:", e)
-    return "info_empresa.txt"
+  // Ahora solo detecta el tipo de consulta
+  const texto = mensajeUsuario.toLowerCase()
+  if (texto.includes("laptop") || texto.includes("producto") || texto.includes("stock") || texto.includes("precio")) {
+    return "productos"
   }
+  if (texto.includes("empresa") || texto.includes("mision") || texto.includes("vision") || texto.includes("horario") || texto.includes("politica")) {
+    return "empresa"
+  }
+  // Por defecto, info empresa
+  return "empresa"
 }
 
 /**
@@ -68,8 +53,13 @@ async function generarRespuestaIA(mensajeUsuario, idContacto, almacenContexto, i
     const contextoUsuario = almacenContexto.get(idContacto) || ""
 
     // Selección dinámica del dataset relevante
-    const archivoDatasetRelevante = await seleccionarDatasetRelevante(mensajeUsuario)
-    const contextoDataset = cargarArchivo(archivoDatasetRelevante)
+    const tipoConsulta = await seleccionarDatasetRelevante(mensajeUsuario)
+    let contextoDataset = ""
+    if (tipoConsulta === "productos") {
+      contextoDataset = await obtenerResumenProductos()
+    } else {
+      contextoDataset = await obtenerInfoEmpresa()
+    }
 
     const promptPersonalizado = `
         Eres un asistente virtual llamado Electra amigable y profesional de ElectronicsJS. Tu objetivo es proporcionar la mejor atención posible siguiendo estas pautas:
@@ -107,14 +97,42 @@ async function generarRespuestaIA(mensajeUsuario, idContacto, almacenContexto, i
     return texto
   } catch (error) {
     console.error("Error generando la respuesta:", error)
-
     if (error.message === "TIMEOUT" && intentos < MAX_REINTENTOS) {
       console.log(`Reintentando generación de respuesta (${intentos + 1}/${MAX_REINTENTOS})...`)
       return generarRespuestaIA(mensajeUsuario, idContacto, almacenContexto, intentos + 1)
     }
-
     return MENSAJES_SISTEMA.ERROR
   }
 }
 
-module.exports = { generarRespuestaIA }
+/**
+ * Obtiene información de productos desde la base de datos
+ * @returns {Promise<string>} - Resumen de productos
+ */
+async function obtenerResumenProductos() {
+  try {
+    const res = await query('vista_productos_detalle');
+    if (!res.data || !Array.isArray(res.data) || !res.data.length) return "No hay productos disponibles actualmente.";
+    return res.data.map(p => `• ${p.nombre_producto} (${p.categoria}, ${p.marca})\n  ${p.descripcion}\n  Precio: $${p.precio} | Stock: ${p.stock}`).join("\n\n");
+  } catch (e) {
+    console.error("Error consultando productos:", e);
+    return "No se pudo obtener información de productos.";
+  }
+}
+
+/**
+ * Obtiene información de la empresa desde la base de datos (puedes crear una vista o tabla para esto)
+ * @returns {Promise<string>} - Resumen de la empresa
+ */
+async function obtenerInfoEmpresa() {
+  try {
+    const res = await query('info_empresa');
+    if (!res.data || !Array.isArray(res.data) || !res.data.length) return "No hay información de la empresa disponible.";
+    return res.data[0].resumen;
+  } catch (e) {
+    console.error("Error consultando info empresa:", e);
+    return "No se pudo obtener información de la empresa.";
+  }
+}
+
+module.exports = { generarRespuestaIA, obtenerResumenProductos, obtenerInfoEmpresa }
