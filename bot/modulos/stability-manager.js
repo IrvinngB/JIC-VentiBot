@@ -31,7 +31,7 @@ class StabilityManager {
     this.TIMEOUT_DESPLIEGUE = 15 * 60 * 1000 // 15 minutos para despliegues
     this.TIMEOUT_PING = 15000 // 15 segundos de timeout para pings
 
-    this.URL_PING = process.env.APP_URL || "https://whastapp-bot-muv1.onrender.com"
+    this.URL_PING = process.env.APP_URL || "https://jic-ventibot.onrender.com/"
 
     this.verificacionSalud = {
       ultimoPing: Date.now(),
