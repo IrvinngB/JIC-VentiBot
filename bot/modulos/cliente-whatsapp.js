@@ -38,7 +38,9 @@ function inicializarCliente(io) {
     qrcode
       .toDataURL(qr)
       .then((url) => io.emit("qr", url))
-      .catch((err) => console.error("Error generando QR:", err))
+      .catch((err) => {
+        console.error("Error generando QR:", err)
+      })
   })
 
   clienteWhatsapp.on("ready", () => {

@@ -173,6 +173,27 @@
                 opacity: 0;
             }
         }
+
+        /* Estilos para el panel de administración */
+        #admin-panel {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 2rem;
+        }
+
+        #admin-panel h2 {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        #metrics {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
     </style>
 </head>
 <body>
@@ -183,6 +204,19 @@
         </div>
         <div id="status">Esperando la conexión...</div>
         <button class="btn-refresh" onclick="refreshQR()">Recargar QR</button>
+
+        <!-- Panel de administración -->
+        <div id="admin-panel">
+            <h2>Panel de Administración</h2>
+            <div id="metrics">
+                <strong>Métricas del Sistema</strong>
+                <ul style="list-style:none;padding:0;margin:0;">
+                    <li><b>Estado:</b> <span id="metric-status">-</span></li>
+                    <li><b>Memoria utilizada:</b> <span id="metric-memory">-</span></li>
+                    <li><b>Actividad reciente:</b> <span id="metric-activity">-</span></li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <footer>
@@ -208,6 +242,15 @@
         socket.on('ready', (message) => {
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = message;
+            document.getElementById('metric-status').innerText = message;
+            document.getElementById('metric-activity').innerText = new Date().toLocaleString();
+        });
+
+        // Recibir métricas del backend
+        socket.on('metrics', (data) => {
+            document.getElementById('metric-status').innerText = data.status || '-';
+            document.getElementById('metric-memory').innerText = data.memory || '-';
+            document.getElementById('metric-activity').innerText = data.activity || '-';
         });
 
         function refreshQR() {

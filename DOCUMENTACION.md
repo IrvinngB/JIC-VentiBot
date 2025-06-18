@@ -11,7 +11,7 @@
 8. [Integración con IA](#integración-con-ia)
 9. [Base de Datos](#base-de-datos)
 10. [Sistema de Estabilidad](#sistema-de-estabilidad)
-11. [Interfaz Web](#interfaz-web)
+11. [Interfaz Web y Panel de Administración](#interfaz-web-y-panel-de-administración)
 12. [Despliegue](#despliegue)
 13. [Configuración del Entorno](#configuración-del-entorno)
 
@@ -178,6 +178,28 @@ Colección de funciones de utilidad para diversas tareas.
 
 ---
 
+# 🔄 Flujo Básico de Respuesta a un Mensaje
+
+El flujo más simple para responder un mensaje en el bot es el siguiente:
+
+```plantuml
+@startuml FlujoRespuestaSimple
+actor "Usuario" as User
+participant "Bot" as Bot
+User -> Bot: Envía mensaje
+Bot -> Bot: Procesa mensaje
+Bot -> User: Envía respuesta
+@enduml
+```
+
+1. El usuario envía un mensaje por WhatsApp.
+2. El bot procesa el mensaje recibido.
+3. El bot responde al usuario.
+
+Este es el flujo esencial y más básico de funcionamiento del bot para responder mensajes.
+
+---
+
 ## 📱 Integración con WhatsApp
 
 La integración con WhatsApp se realiza mediante la biblioteca whatsapp-web.js, que permite:
@@ -237,14 +259,22 @@ Este sistema hace que el bot sea altamente resiliente, capaz de recuperarse auto
 
 ---
 
-## 🖥️ Interfaz Web
+## 🖥️ Interfaz Web y Panel de Administración
 
-El proyecto incluye una interfaz web simple pero efectiva, principalmente para:
+El proyecto incluye una interfaz web moderna y un panel de administración, diseñados para:
 - Mostrar el código QR para la autenticación inicial de WhatsApp
 - Proporcionar información del estado de la conexión
 - Permitir la recarga manual del código QR si es necesario
+- **Panel de Administración:** Monitoreo en tiempo real, configuración de parámetros y visualización de métricas operacionales
+- **Interfaz de Administración:** Panel web desarrollado en HTML/CSS/JavaScript para monitoreo en tiempo real, configuración de parámetros y visualización de métricas operacionales. En la misma web donde se muestra el código QR, también se despliegan algunas métricas clave del sistema (como estado de la conexión, memoria utilizada, actividad reciente, etc.) para facilitar la supervisión y gestión del bot desde cualquier dispositivo.
 
-La interfaz está diseñada con un enfoque moderno y receptivo, utilizando HTML, CSS y JavaScript con Socket.IO para actualización en tiempo real.
+La interfaz está desarrollada en HTML, CSS y JavaScript, utilizando Socket.IO para actualización en tiempo real. El panel de administración permite a los operadores:
+- Visualizar métricas clave del sistema (estado, memoria, actividad reciente)
+- Modificar parámetros de configuración sin reiniciar el bot
+- Monitorear logs y eventos importantes en tiempo real
+- Acceder a herramientas de diagnóstico y endpoints de salud
+
+El diseño es responsivo y enfocado en la usabilidad, facilitando la gestión y supervisión del bot desde cualquier dispositivo.
 
 ---
 

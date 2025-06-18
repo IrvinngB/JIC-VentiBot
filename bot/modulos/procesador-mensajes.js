@@ -110,14 +110,7 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
 
   // Verificar si el usuario está solicitando atención humana
   if (solicitaAtencionHumana(textoMensaje)) {
-    const estadoTienda = verificarHorario()
-    if (!estadoTienda.abierto) {
-      await mensaje.reply(
-        "Lo siento, fuera del horario de atención no podemos conectarte con un agente. Por favor, intenta durante nuestro horario de atención.",
-      )
-      return
-    }
-
+    // Eliminar restricción de horario: siempre permite atención humana
     await mensaje.reply(MENSAJES_SISTEMA.SOLICITUD_HUMANO)
     usuariosPausados.set(idContacto, true)
     usuariosSolicitanHumano.set(idContacto, true)
@@ -159,7 +152,6 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
 
   // Mensajes de bienvenida y horario
   try {
-    const estadoTienda = verificarHorario()
     let textoRespuesta
 
     if (textoMensaje === "hola") {
@@ -168,10 +160,8 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
       textoRespuesta = MENSAJES_SISTEMA.HORARIO
     } else if (/web|página web|pagina web/i.test(textoMensaje)) {
       textoRespuesta = MENSAJES_SISTEMA.PAGINA_WEB
-    } else if (estadoTienda.abierto) {
-      textoRespuesta = await generarRespuestaIA(mensaje.body, idContacto, almacenContexto)
     } else {
-      textoRespuesta = `🕒 Nuestra tienda está cerrada en este momento. El horario de atención es de Lunes a Viernes de 6:00 AM a 10:00 PM y Sábados y Domingos de 7:00 AM a 8:00 PM (Hora de Panamá).\n\n🌐 Visita nuestra web: https://irvin-benitez.software`
+      textoRespuesta = await generarRespuestaIA(mensaje.body, idContacto, almacenContexto)
     }
 
     await mensaje.reply(textoRespuesta)

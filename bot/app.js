@@ -39,13 +39,42 @@ servidor.listen(PUERTO, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PUERTO}`)
 })
 
-// Manejo de errores no capturados
-process.on("unhandledRejection", (error) => {
-  console.error("Error no manejado:", error)
+// --- Panel de administración: métricas y logs en tiempo real ---
+const os = require('os')
+let actividadReciente = '-'
+
+function getMetrics() {
+  const mem = process.memoryUsage()
+  return {
+    status: clienteWhatsapp && clienteWhatsapp.info ? clienteWhatsapp.info.connection : '-',
+    memory: `${(mem.rss / 1024 / 1024).toFixed(1)} MB`,
+    activity: actividadReciente,
+  }
+}
+
+// Emitir métricas periódicamente
+setInterval(() => {
+  io.emit('metrics', getMetrics())
+}, 5000)
+
+// Función para emitir logs
+function emitirLog(msg) {
+  io.emit('log', `[${new Date().toLocaleTimeString()}] ${msg}`)
+  actividadReciente = msg
+}
+
+// Ejemplo: log de inicio
+emitirLog('Bot iniciado')
+
+// Escuchar logs importantes del sistema
+process.on('unhandledRejection', (error) => {
+  console.error('Error no manejado:', error)
+  emitirLog('Error no manejado: ' + error.message)
 })
 
-process.on("uncaughtException", (error) => {
-  console.error("Excepción no capturada:", error)
+process.on('uncaughtException', (error) => {
+  console.error('Excepción no capturada:', error)
+  emitirLog('Excepción no capturada: ' + error.message)
 })
 
 // Limpieza al cerrar
