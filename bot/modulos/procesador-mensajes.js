@@ -36,6 +36,13 @@ const colaMensajes = []
 const TAMANO_MAXIMO_COLA = 100
 const TIEMPO_ESPERA_MENSAJE = 60000 // 60 segundos
 
+// Circuit Breaker para evitar bucles infinitos
+let circuitBreakerAbierto = false
+let tiempoAperturaCircuit = null
+let erroresConsecutivos = 0
+const MAX_ERRORES_CONSECUTIVOS = 5
+const TIEMPO_CIRCUIT_ABIERTO = 5 * 60 * 1000 // 5 minutos
+
 /**
  * Verifica si el cliente de WhatsApp está en un estado válido
  * @param {Object} clienteWhatsapp - Cliente de WhatsApp
@@ -85,6 +92,12 @@ function verificarEstadoCliente(clienteWhatsapp) {
 async function enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp, intentos = 0) {
   const MAX_INTENTOS = 3
 
+  // Verificar circuit breaker antes de intentar enviar
+  if (esCircuitBreakerAbierto()) {
+    console.log("⏸️ Circuit breaker abierto - no enviando mensaje")
+    throw new Error("Circuit breaker abierto - sistema en pausa")
+  }
+
   try {
     // Verificar estado del cliente antes de enviar
     if (!verificarEstadoCliente(clienteWhatsapp)) {
@@ -92,15 +105,39 @@ async function enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp, int
     }
 
     await mensaje.reply(textoRespuesta)
-    console.log("✅ Mensaje enviado correctamente")
+    
+    // Log más informativo cuando hay éxito tras fallos
+    if (intentos > 0) {
+      console.log(`✅ ¡ÉXITO! Mensaje enviado tras ${intentos} reintentos fallidos`)
+    } else {
+      console.log("✅ Mensaje enviado correctamente al primer intento")
+    }
+    
+    // Resetear circuit breaker en caso de éxito
+    resetearCircuitBreaker()
+    
   } catch (error) {
-    console.error(`❌ Error enviando mensaje (intento ${intentos + 1}/${MAX_INTENTOS}):`, error.message)
+    // Log diferenciado según si es error temporal o permanente
+    if (error.message.includes("serialize") || error.message.includes("getMessageModel")) {
+      console.error(`⚠️ Error TEMPORAL de serialización (intento ${intentos + 1}/${MAX_INTENTOS}):`, error.message)
+    } else {
+      console.error(`❌ Error enviando mensaje (intento ${intentos + 1}/${MAX_INTENTOS}):`, error.message)
+    }
+
+    // Incrementar contador de errores consecutivos
+    erroresConsecutivos++
 
     // Si es un error de serialización, notificar al stability manager
     if (error.message.includes("serialize") || error.message.includes("getMessageModel")) {
       if (stabilityManager) {
         stabilityManager.manejarErrorSerializacion(error)
       }
+    }
+
+    // Verificar si debemos abrir el circuit breaker
+    if (erroresConsecutivos >= MAX_ERRORES_CONSECUTIVOS) {
+      abrirCircuitBreaker()
+      throw new Error("Demasiados errores consecutivos - circuit breaker activado")
     }
 
     // Si es un error de serialización o conexión y tenemos intentos restantes
@@ -111,12 +148,16 @@ async function enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp, int
         error.message.includes("Protocol error") ||
         error.message.includes("Target closed"))
     ) {
-      console.log(`🔄 Reintentando envío en 2 segundos...`)
+      console.log(`🔄 Error temporal detectado, reintentando envío en 2 segundos... (${intentos + 1}/${MAX_INTENTOS})`)
       await new Promise((resolve) => setTimeout(resolve, 2000))
       return await enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp, intentos + 1)
     }
 
     // Si agotamos los intentos o es otro tipo de error
+    if (intentos === MAX_INTENTOS - 1) {
+      console.error(`💥 FALLO DEFINITIVO: Agotados todos los intentos (${MAX_INTENTOS}) para enviar mensaje`)
+    }
+    
     throw error
   }
 }
@@ -142,6 +183,12 @@ async function procesarMensaje(mensaje, clienteWhatsapp) {
 async function procesarColaMensajes() {
   if (procesandoMensaje || colaMensajes.length === 0) return
 
+  // Verificar circuit breaker antes de procesar
+  if (esCircuitBreakerAbierto()) {
+    console.log("⏸️ Circuit breaker abierto - pausando procesamiento de cola")
+    return
+  }
+
   procesandoMensaje = true
   const { mensaje, clienteWhatsapp, resolve, reject } = colaMensajes.shift()
 
@@ -153,6 +200,7 @@ async function procesarColaMensajes() {
       stabilityManager.resetearContadoresSerializacion()
     }
     
+    resetearCircuitBreaker() // Resetear circuit breaker en caso de éxito
     resolve()
   } catch (error) {
     console.error("Error procesando mensaje en cola:", error)
@@ -168,6 +216,12 @@ async function procesarColaMensajes() {
           // El stability manager manejará el reinicio
         }
       }
+    }
+
+    // Abrir el circuit breaker si hay demasiados errores consecutivos
+    erroresConsecutivos++
+    if (erroresConsecutivos >= MAX_ERRORES_CONSECUTIVOS) {
+      abrirCircuitBreaker()
     }
 
     reject(error)
@@ -190,7 +244,7 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
 
   // Verificar límite de mensajes
   if (verificarLimiteMensajes(idContacto, contadorMensajesUsuario)) {
-    await mensaje.reply(MENSAJES_SISTEMA.LIMITE_MENSAJES)
+    await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.LIMITE_MENSAJES, clienteWhatsapp)
     return
   }
 
@@ -198,11 +252,11 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
   if (esMensajeRepetido(idContacto, textoMensaje, ultimosMensajesUsuario)) {
     if (ultimosMensajesUsuario.get(idContacto).count === 0) {
       // Si es el cuarto mensaje repetido
-      await mensaje.reply(MENSAJES_SISTEMA.ADVERTENCIA_SPAM)
+      await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ADVERTENCIA_SPAM, clienteWhatsapp)
       tiempoEsperaSpam.set(idContacto, Date.now() + 120000) // 2 minutos de espera
       return
     } else {
-      await mensaje.reply(MENSAJES_SISTEMA.MENSAJE_REPETIDO)
+      await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.MENSAJE_REPETIDO, clienteWhatsapp)
       return
     }
   }
@@ -296,17 +350,23 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
   } catch (error) {
     console.error("Error procesando mensaje:", error)
     
-    // Manejo específico para errores de serialización
-    if (error.message.includes('serialize') || error.message.includes('getMessageModel')) {
-      console.log("⚠️ Error de conexión con WhatsApp Web detectado")
-      // Intentar enviar mensaje de error de forma segura
-      try {
-        await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
-      } catch (errorSecundario) {
-        console.error("No se pudo enviar mensaje de error:", errorSecundario.message)
-      }
-    } else {
+    // CRÍTICO: NO intentar enviar mensaje de error si hay problemas de serialización
+    // Esto evita el bucle infinito
+    if (error.message.includes('serialize') || 
+        error.message.includes('getMessageModel') ||
+        error.message.includes('Circuit breaker') ||
+        esCircuitBreakerAbierto()) {
+      console.log("🚨 Error crítico de conexión - NO enviando mensaje de error para evitar bucle")
+      // Solo logear, NO enviar nada al usuario
+      return
+    }
+    
+    // Solo intentar enviar mensaje de error si NO es un problema de serialización
+    try {
       await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
+    } catch (errorSecundario) {
+      console.error("No se pudo enviar mensaje de error:", errorSecundario.message)
+      // NO intentar más - esto evita bucles infinitos
     }
   }
 }
@@ -360,7 +420,60 @@ async function manejarMensajeConMedios(mensaje, idContacto, clienteWhatsapp) {
     ) // 1 hora
   } catch (error) {
     console.error("Error manejando mensaje con medios:", error)
-    await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
+    
+    // NO intentar enviar mensaje de error si hay problemas de conexión
+    if (error.message.includes('serialize') || 
+        error.message.includes('getMessageModel') ||
+        error.message.includes('Circuit breaker') ||
+        esCircuitBreakerAbierto()) {
+      console.log("🚨 Error crítico con medios - NO enviando respuesta para evitar bucle")
+      return
+    }
+    
+    // Solo intentar si NO hay problemas de serialización
+    try {
+      await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
+    } catch (errorSecundario) {
+      console.error("No se pudo enviar mensaje de error de medios:", errorSecundario.message)
+    }
+  }
+}
+
+/**
+ * Verifica si el circuit breaker está abierto
+ * @returns {boolean} True si el circuit está abierto
+ */
+function esCircuitBreakerAbierto() {
+  if (!circuitBreakerAbierto) return false
+  
+  // Verificar si es tiempo de cerrar el circuit
+  if (Date.now() - tiempoAperturaCircuit > TIEMPO_CIRCUIT_ABIERTO) {
+    console.log("🔄 Circuit breaker cerrándose, intentando reconectar...")
+    circuitBreakerAbierto = false
+    tiempoAperturaCircuit = null
+    erroresConsecutivos = 0
+    return false
+  }
+  
+  return true
+}
+
+/**
+ * Abre el circuit breaker cuando hay demasiados errores
+ */
+function abrirCircuitBreaker() {
+  circuitBreakerAbierto = true
+  tiempoAperturaCircuit = Date.now()
+  console.log("🚨 Circuit Breaker ABIERTO - Bot pausado por 5 minutos debido a errores consecutivos")
+}
+
+/**
+ * Resetea el contador de errores cuando hay éxito
+ */
+function resetearCircuitBreaker() {
+  if (erroresConsecutivos > 0) {
+    console.log(`✅ Errores consecutivos reseteados (había ${erroresConsecutivos} errores)`)
+    erroresConsecutivos = 0
   }
 }
 
