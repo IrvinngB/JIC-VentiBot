@@ -5,6 +5,7 @@ const socketIo = require("socket.io")
 const path = require("path")
 const { inicializarCliente } = require("./modulos/cliente-whatsapp")
 const { configurarRutas } = require("./modulos/rutas")
+const { configurarStabilityManager } = require("./modulos/procesador-mensajes")
 const StabilityManager = require("./modulos/stability-manager")
 
 // Puerto de la aplicación
@@ -27,6 +28,9 @@ const clienteWhatsapp = inicializarCliente(io)
 
 // Inicializar el administrador de estabilidad
 const administradorEstabilidad = new StabilityManager(clienteWhatsapp)
+
+// Configurar el stability manager en el procesador de mensajes
+configurarStabilityManager(administradorEstabilidad)
 
 // Configurar rutas de la aplicación
 configurarRutas(app, path)

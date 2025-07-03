@@ -11,6 +11,17 @@ const {
 const { generarRespuestaIA } = require("./respuestas-ia")
 const { TIPOS_MEDIOS, PATRONES_SPAM } = require("./constantes")
 
+// Variable para el stability manager (se inicializará externamente)
+let stabilityManager = null
+
+/**
+ * Configura el stability manager
+ * @param {Object} manager - Instancia del StabilityManager
+ */
+function configurarStabilityManager(manager) {
+  stabilityManager = manager
+}
+
 // Estado global con gestión de memoria mejorada
 const usuariosPausados = new Map()
 const almacenContexto = new Map()
@@ -24,6 +35,91 @@ let procesandoMensaje = false
 const colaMensajes = []
 const TAMANO_MAXIMO_COLA = 100
 const TIEMPO_ESPERA_MENSAJE = 60000 // 60 segundos
+
+/**
+ * Verifica si el cliente de WhatsApp está en un estado válido
+ * @param {Object} clienteWhatsapp - Cliente de WhatsApp
+ * @returns {boolean} True si el cliente está listo
+ */
+function verificarEstadoCliente(clienteWhatsapp) {
+  try {
+    // Verificaciones básicas
+    if (!clienteWhatsapp) {
+      console.log("❌ Cliente es null o undefined")
+      return false
+    }
+
+    // Verificar que el cliente esté inicializado
+    if (!clienteWhatsapp.pupPage) {
+      console.log("❌ Página de Puppeteer no disponible")
+      return false
+    }
+
+    // Verificar que la página no esté cerrada
+    if (clienteWhatsapp.pupPage.isClosed()) {
+      console.log("❌ Página de Puppeteer está cerrada")
+      return false
+    }
+
+    // Verificar información del cliente
+    if (!clienteWhatsapp.info || !clienteWhatsapp.info.wid) {
+      console.log("❌ Información del cliente no disponible")
+      return false
+    }
+
+    // Si llegamos aquí, el cliente parece estar en buen estado
+    return true
+  } catch (error) {
+    console.error("❌ Error verificando estado del cliente:", error.message)
+    return false
+  }
+}
+
+/**
+ * Envía un mensaje de forma segura con reintentos
+ * @param {Object} mensaje - Mensaje de WhatsApp
+ * @param {string} textoRespuesta - Texto a enviar
+ * @param {Object} clienteWhatsapp - Cliente de WhatsApp
+ * @param {number} intentos - Número de intentos (máximo 3)
+ */
+async function enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp, intentos = 0) {
+  const MAX_INTENTOS = 3
+
+  try {
+    // Verificar estado del cliente antes de enviar
+    if (!verificarEstadoCliente(clienteWhatsapp)) {
+      throw new Error("Cliente de WhatsApp no está en estado válido")
+    }
+
+    await mensaje.reply(textoRespuesta)
+    console.log("✅ Mensaje enviado correctamente")
+  } catch (error) {
+    console.error(`❌ Error enviando mensaje (intento ${intentos + 1}/${MAX_INTENTOS}):`, error.message)
+
+    // Si es un error de serialización, notificar al stability manager
+    if (error.message.includes("serialize") || error.message.includes("getMessageModel")) {
+      if (stabilityManager) {
+        stabilityManager.manejarErrorSerializacion(error)
+      }
+    }
+
+    // Si es un error de serialización o conexión y tenemos intentos restantes
+    if (
+      intentos < MAX_INTENTOS - 1 &&
+      (error.message.includes("serialize") ||
+        error.message.includes("getMessageModel") ||
+        error.message.includes("Protocol error") ||
+        error.message.includes("Target closed"))
+    ) {
+      console.log(`🔄 Reintentando envío en 2 segundos...`)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      return await enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp, intentos + 1)
+    }
+
+    // Si agotamos los intentos o es otro tipo de error
+    throw error
+  }
+}
 
 /**
  * Procesa un mensaje de WhatsApp
@@ -51,9 +147,29 @@ async function procesarColaMensajes() {
 
   try {
     await manejarMensaje(mensaje, clienteWhatsapp)
+    
+    // Resetear contadores de errores si el mensaje se procesó exitosamente
+    if (stabilityManager) {
+      stabilityManager.resetearContadoresSerializacion()
+    }
+    
     resolve()
   } catch (error) {
     console.error("Error procesando mensaje en cola:", error)
+
+    // Si es un error de serialización, usar el stability manager
+    if (error.message.includes("serialize") || error.message.includes("getMessageModel")) {
+      console.log("⚠️ Error de serialización detectado, puede que la sesión esté desconectada")
+      
+      if (stabilityManager) {
+        const debeReiniciar = stabilityManager.manejarErrorSerializacion(error)
+        if (debeReiniciar) {
+          console.log("🔄 Iniciando proceso de reinicio del cliente...")
+          // El stability manager manejará el reinicio
+        }
+      }
+    }
+
     reject(error)
   } finally {
     procesandoMensaje = false
@@ -103,7 +219,7 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
 
   // Verificar si el mensaje es spam
   if (esSpam(mensaje, PATRONES_SPAM)) {
-    await mensaje.reply(MENSAJES_SISTEMA.ADVERTENCIA_SPAM)
+    await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ADVERTENCIA_SPAM, clienteWhatsapp)
     tiempoEsperaSpam.set(idContacto, Date.now() + 180000) // 3 minutos de espera
     return
   }
@@ -112,13 +228,15 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
   if (solicitaAtencionHumana(textoMensaje)) {
     const estadoTienda = verificarHorario()
     if (!estadoTienda.abierto) {
-      await mensaje.reply(
+      await enviarMensajeSeguro(
+        mensaje,
         "Lo siento, fuera del horario de atención no podemos conectarte con un agente. Por favor, intenta durante nuestro horario de atención.",
+        clienteWhatsapp
       )
       return
     }
 
-    await mensaje.reply(MENSAJES_SISTEMA.SOLICITUD_HUMANO)
+    await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.SOLICITUD_HUMANO, clienteWhatsapp)
     usuariosPausados.set(idContacto, true)
     usuariosSolicitanHumano.set(idContacto, true)
 
@@ -143,7 +261,7 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
   if (quiereVolverAlBot(textoMensaje) && usuariosSolicitanHumano.get(idContacto)) {
     usuariosPausados.delete(idContacto)
     usuariosSolicitanHumano.delete(idContacto)
-    await mensaje.reply("¡Bienvenido de vuelta! ¿En qué puedo ayudarte?")
+    await enviarMensajeSeguro(mensaje, "¡Bienvenido de vuelta! ¿En qué puedo ayudarte?", clienteWhatsapp)
     return
   }
 
@@ -174,10 +292,22 @@ async function manejarMensaje(mensaje, clienteWhatsapp) {
       textoRespuesta = `🕒 Nuestra tienda está cerrada en este momento. El horario de atención es de Lunes a Viernes de 6:00 AM a 10:00 PM y Sábados y Domingos de 7:00 AM a 8:00 PM (Hora de Panamá).\n\n🌐 Visita nuestra web: https://irvin-benitez.software`
     }
 
-    await mensaje.reply(textoRespuesta)
+    await enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp)
   } catch (error) {
     console.error("Error procesando mensaje:", error)
-    await mensaje.reply(MENSAJES_SISTEMA.ERROR)
+    
+    // Manejo específico para errores de serialización
+    if (error.message.includes('serialize') || error.message.includes('getMessageModel')) {
+      console.log("⚠️ Error de conexión con WhatsApp Web detectado")
+      // Intentar enviar mensaje de error de forma segura
+      try {
+        await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
+      } catch (errorSecundario) {
+        console.error("No se pudo enviar mensaje de error:", errorSecundario.message)
+      }
+    } else {
+      await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
+    }
   }
 }
 
@@ -208,7 +338,7 @@ async function manejarMensajeConMedios(mensaje, idContacto, clienteWhatsapp) {
   }
 
   try {
-    await mensaje.reply(textoRespuesta)
+    await enviarMensajeSeguro(mensaje, textoRespuesta, clienteWhatsapp)
     usuariosPausados.set(idContacto, true)
     usuariosSolicitanHumano.set(idContacto, true)
 
@@ -218,17 +348,19 @@ async function manejarMensajeConMedios(mensaje, idContacto, clienteWhatsapp) {
         if (usuariosPausados.get(idContacto)) {
           usuariosPausados.delete(idContacto)
           usuariosSolicitanHumano.delete(idContacto)
-          clienteWhatsapp.sendMessage(
-            idContacto,
+          // Usar envío seguro para el mensaje automático también
+          enviarMensajeSeguro(
+            { from: idContacto, reply: (texto) => clienteWhatsapp.sendMessage(idContacto, texto) },
             "El asistente virtual está nuevamente disponible. ¿En qué puedo ayudarte?",
-          )
+            clienteWhatsapp
+          ).catch(err => console.error("Error enviando mensaje de reactivación:", err))
         }
       },
       60 * 60 * 1000,
     ) // 1 hora
   } catch (error) {
     console.error("Error manejando mensaje con medios:", error)
-    await mensaje.reply(MENSAJES_SISTEMA.ERROR)
+    await enviarMensajeSeguro(mensaje, MENSAJES_SISTEMA.ERROR, clienteWhatsapp)
   }
 }
 
@@ -268,4 +400,5 @@ module.exports = {
   ultimosMensajesUsuario,
   tiempoEsperaSpam,
   contadorMensajesUsuario,
+  configurarStabilityManager,
 }

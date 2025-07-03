@@ -33,6 +33,11 @@ class StabilityManager {
 
     this.URL_PING = process.env.APP_URL || "https://jic-ventibot.onrender.com/"
 
+    // Contadores específicos para errores de serialización
+    this.erroresSerializacion = 0
+    this.ultimoErrorSerializacion = null
+    this.MAX_ERRORES_SERIALIZACION = 3 // Máximo de errores antes de reiniciar
+
     this.verificacionSalud = {
       ultimoPing: Date.now(),
       ultimoMensaje: Date.now(),
@@ -515,6 +520,42 @@ class StabilityManager {
         this.reiniciarServicios()
       }
     })
+  }
+
+  /**
+   * Maneja errores específicos de serialización
+   * @param {Error} error - El error de serialización
+   * @returns {boolean} True si se debe reiniciar el cliente
+   */
+  manejarErrorSerializacion(error) {
+    this.erroresSerializacion++
+    this.ultimoErrorSerializacion = Date.now()
+    
+    console.log(`⚠️ Error de serialización detectado (${this.erroresSerializacion}/${this.MAX_ERRORES_SERIALIZACION}):`, error.message)
+    
+    this.registrarError("serializacion", {
+      mensaje: error.message,
+      timestamp: Date.now(),
+      contador: this.erroresSerializacion
+    })
+
+    // Si hemos tenido demasiados errores de serialización, reiniciar
+    if (this.erroresSerializacion >= this.MAX_ERRORES_SERIALIZACION) {
+      console.log("🔄 Demasiados errores de serialización, reiniciando cliente...")
+      this.erroresSerializacion = 0
+      return true
+    }
+
+    return false
+  }
+
+  /**
+   * Resetea los contadores de errores de serialización
+   */
+  resetearContadoresSerializacion() {
+    this.erroresSerializacion = 0
+    this.ultimoErrorSerializacion = null
+    console.log("✅ Contadores de serialización reseteados")
   }
 }
 

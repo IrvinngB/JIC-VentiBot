@@ -46,6 +46,21 @@ function inicializarCliente(io) {
     io.emit("ready", "Cliente WhatsApp Web listo")
   })
 
+  clienteWhatsapp.on("authenticated", () => {
+    console.log("✅ Cliente autenticado correctamente")
+    io.emit("authenticated", "Cliente autenticado")
+  })
+
+  clienteWhatsapp.on("auth_failure", (msg) => {
+    console.error("❌ Fallo de autenticación:", msg)
+    io.emit("auth_failure", msg)
+  })
+
+  clienteWhatsapp.on("disconnected", (reason) => {
+    console.log("🔌 Cliente desconectado:", reason)
+    io.emit("disconnected", reason)
+  })
+
   clienteWhatsapp.on("loading_screen", (percent, message) => {
     console.log("Cargando:", percent, "%", message)
     io.emit("loading", { percent, message })
